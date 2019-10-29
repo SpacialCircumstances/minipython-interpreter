@@ -39,6 +39,15 @@ fn decr<'a>() -> Parser<'a, char, Ast<'a>> {
     (var_name() - tag("-=1")).map(|var_name| Decr { var_name: &var_name })
 }
 
+fn assign<'a>() -> Parser<'a, char, Ast<'a>> {
+    let args = sym(')') * list(var_name(), sym(',')) - sym(')');
+    (var_name() - tag("=") + var_name() + args).map(|((v, f), arguments)| Assign {
+        var_name: v,
+        fun_name: f,
+        args: arguments
+    })
+}
+
 fn main() {
     println!("Hello, world!");
 }
