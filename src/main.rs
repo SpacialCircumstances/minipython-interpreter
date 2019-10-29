@@ -19,6 +19,10 @@ struct Program<'a> {
     body: Vec<Ast<'a>>
 }
 
+fn separator<'a>() -> Parser<'a, char, ()> {
+    (sym(';') | sym('\n')).discard()
+}
+
 fn var_name<'a>() -> Parser<'a, char, &'a str> {
     is_a(|c: char| c.is_alphanumeric()).repeat(0..).collect().map(|s| s.to_str())
 }
