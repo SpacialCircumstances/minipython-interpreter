@@ -48,6 +48,10 @@ fn assign<'a>() -> Parser<'a, char, Ast<'a>> {
     })
 }
 
+fn expression<'a>() -> Parser<'a, char, Ast<'a>> {
+    incr() | decr() | return_expr() | assign()
+}
+
 fn main() {
     println!("Hello, world!");
 }
