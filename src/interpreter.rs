@@ -3,7 +3,6 @@ use std::fmt::{Display, Formatter, Error};
 use crate::ast::*;
 use crate::ast::Ast::*;
 use std::cmp::{max};
-use std::iter::FromIterator;
 use indexmap::map::IndexMap;
 
 #[derive(Debug, Eq, PartialEq, Clone)]

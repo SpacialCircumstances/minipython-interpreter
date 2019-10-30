@@ -2,7 +2,6 @@ mod ast;
 mod parser;
 mod interpreter;
 
-use std::env;
 use std::fs;
 use indexmap::map::IndexMap;
 use clap::{App, Arg};
