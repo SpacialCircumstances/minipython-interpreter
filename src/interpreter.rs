@@ -4,13 +4,15 @@ use crate::ast::*;
 use crate::ast::Ast::*;
 
 pub struct Env<'a> {
-    context: HashMap<&'a str, i32>
+    context: HashMap<&'a str, i32>,
+    functions: HashMap<&'a str, Ast>
 }
 
 impl<'a> Env<'a> {
     pub fn new(initial: &HashMap<&'a str, i32>) -> Self {
         Env {
-            context: initial.clone()
+            context: initial.clone(),
+            functions: HashMap::new()
         }
     }
 
@@ -27,6 +29,17 @@ impl<'a> Env<'a> {
     pub fn set(&mut self, var: &'a str, value: i32) {
         self.context.insert(var, value);
     }
+
+    pub fn set_function(&mut self, name: &'a str, expr: Ast) {
+        self.functions.insert(name, expr);
+    }
+
+    pub fn get_function(&self, name: &'a str) -> Result<&Ast, String> {
+        match self.functions.get(name) {
+            None => Err(format!("Function {} does not exist", name)),
+            Some(fun) => Ok(fun)
+        }
+    }
 }
 
 impl<'a> Display for Env<'a> {
@@ -36,7 +49,7 @@ impl<'a> Display for Env<'a> {
     }
 }
 
-fn interpret<'a>(env: &mut Env<'a>, expr: Ast) {
+fn interpret<'a>(env: &mut Env<'a>, expr: &Ast) {
     println!("{}", env);
     println!("Executing: {}", expr);
     match expr {
@@ -47,6 +60,6 @@ fn interpret<'a>(env: &mut Env<'a>, expr: Ast) {
 
 pub fn interpret_program<'a>(mut env: Env<'a>, program: Vec<Ast>) {
     for expr in program {
-        interpret(&mut env, expr)
+        interpret(&mut env, &expr)
     }
 }
