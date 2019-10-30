@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fmt::{Display, Formatter, Error};
 use crate::ast::*;
 use crate::ast::Ast::*;
-use std::cmp::min;
+use std::cmp::{max};
 
 pub struct Env<'a> {
     context: HashMap<&'a str, i32>,
@@ -17,10 +17,10 @@ impl<'a> Env<'a> {
         }
     }
 
-    pub fn get_or_create(&mut self, var: &'a str, value: i32) -> i32 {
+    pub fn get_or_create(&mut self, var: &'a str) -> i32 {
         match self.context.get(var) {
             None => {
-                self.context.insert(var, value);
+                self.context.insert(var, 0);
                 0
             },
             Some(val) => *val
@@ -56,13 +56,22 @@ fn interpret<'a>(env: &mut Env<'a>, expr: &'a Ast) {
     println!("===>");
     match expr {
         Incr { var_name } => {
-            let old = env.get_or_create(var_name, 0);
+            let old = env.get_or_create(var_name);
             env.set(var_name, old + 1)
         }
         Decr { var_name } => {
-            let old = env.get_or_create(var_name, 0);
-            let new = min(0, old - 1);
+            let old = env.get_or_create(var_name);
+            let new = max(0, old - 1);
             env.set(var_name, new)
+        }
+        While { cond_var, body } => {
+            loop {
+                if env.get_or_create(cond_var) == 0 {
+                    break;
+                } else {
+                    interpret_program(env, body)
+                }
+            }
         }
         _ => unimplemented!()
     }
@@ -70,8 +79,8 @@ fn interpret<'a>(env: &mut Env<'a>, expr: &'a Ast) {
     println!();
 }
 
-pub fn interpret_program<'a>(mut env: Env<'a>, program: &'a Vec<Ast>) {
+pub fn interpret_program<'a>(env: &mut Env<'a>, program: &'a Vec<Ast>) {
     for expr in program {
-        interpret(&mut env, expr)
+        interpret(env, expr)
     }
 }
