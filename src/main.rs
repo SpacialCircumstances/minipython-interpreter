@@ -4,6 +4,7 @@ mod interpreter;
 
 use std::env;
 use std::fs;
+use indexmap::map::IndexMap;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -16,7 +17,7 @@ fn main() {
     let program_parser = parser::program();
     match program_parser.parse(&code) {
         Ok(ast) => {
-            let env_initial = std::collections::HashMap::new();
+            let env_initial = IndexMap::new();
             let mut env = interpreter::Env::new(&env_initial);
             interpreter::interpret_program(&mut env, &ast);
         },

@@ -4,6 +4,7 @@ use crate::ast::*;
 use crate::ast::Ast::*;
 use std::cmp::{max};
 use std::iter::FromIterator;
+use indexmap::map::IndexMap;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Func<'a> {
@@ -21,13 +22,13 @@ impl<'a> Func<'a> {
 }
 
 pub struct Env<'a> {
-    context: HashMap<&'a str, i32>,
+    context: IndexMap<&'a str, i32>,
     functions: HashMap<&'a str, Func<'a>>,
     result_name: Option<&'a str>
 }
 
 impl<'a> Env<'a> {
-    pub fn new(initial: &HashMap<&'a str, i32>) -> Self {
+    pub fn new(initial: &IndexMap<&'a str, i32>) -> Self {
         Env {
             context: initial.clone(),
             functions: HashMap::new(),
@@ -35,7 +36,7 @@ impl<'a> Env<'a> {
         }
     }
 
-    pub fn from_parent(context: HashMap<&'a str, i32>, functions: HashMap<&'a str, Func<'a>>) -> Self {
+    pub fn from_parent(context: IndexMap<&'a str, i32>, functions: HashMap<&'a str, Func<'a>>) -> Self {
         Env {
             context,
             functions,
@@ -117,7 +118,7 @@ fn interpret<'a>(env: &mut Env<'a>, expr: &'a Ast) {
         }
         Assign { var_name, fun_name, args } => {
             let func = env.get_function(fun_name).unwrap();
-            let mut new_context = HashMap::new();
+            let mut new_context = IndexMap::new();
             if args.len() != func.parameters.len() {
                 panic!(format!("Function {} expected {} arguments, but got {}", fun_name, func.parameters.len(), args.len()));
             }
