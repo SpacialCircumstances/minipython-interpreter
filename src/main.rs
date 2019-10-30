@@ -1,22 +1,15 @@
 use pom::parser::*;
 use crate::Ast::*;
-use pom::set::Set;
+use std::iter::FromIterator;
 
 #[derive(Debug, Eq, PartialEq)]
-enum Ast<'a> {
-    Def { name: &'a str, parameters: Vec<&'a str>, body: Vec<Ast<'a>> },
-    Return { name: &'a str },
-    While { cond_var: &'a str, body: Vec<Ast<'a>> },
-    Assign { var_name: &'a str, fun_name: &'a str, args: Vec<&'a str> },
-    Incr { var_name: &'a str },
-    Decr { var_name: &'a str }
-}
-
-#[derive(Debug, Eq, PartialEq)]
-struct Program<'a> {
-    input: Vec<&'a str>,
-    output: Vec<&'a str>,
-    body: Vec<Ast<'a>>
+enum Ast {
+    Def { name: String, parameters: Vec<String>, body: Vec<Ast> },
+    Return { name: String },
+    While { cond_var: String, body: Vec<Ast> },
+    Assign { var_name: String, fun_name: String, args: Vec<String> },
+    Incr { var_name: String },
+    Decr { var_name: String }
 }
 
 fn whitespace<'a>() -> Parser<'a, char, ()> {
@@ -27,27 +20,27 @@ fn separator<'a>() -> Parser<'a, char, ()> {
     (sym(';') | sym('\n')).discard()
 }
 
-fn var_name<'a>() -> Parser<'a, char, &'a str> {
-    is_a(|c: char| c.is_alphanumeric()).repeat(0..).collect().map(|s| s.to_str())
+fn var_name<'a>() -> Parser<'a, char, String> {
+    is_a(|c: char| c.is_alphanumeric()).repeat(0..).collect().map(|s| String::from_iter(s.iter()))
 }
 
-fn return_expr<'a>() -> Parser<'a, char, Ast<'a>> {
+fn return_expr<'a>() -> Parser<'a, char, Ast> {
     (tag("return ") * var_name()).map(|name| Return { name })
 }
 
-fn incr<'a>() -> Parser<'a, char, Ast<'a>> {
-    (var_name() - tag("+=1")).map(|var_name| Incr { var_name: &var_name })
+fn incr<'a>() -> Parser<'a, char, Ast> {
+    (var_name() - tag("+=1")).map(|var_name| Incr { var_name })
 }
 
-fn decr<'a>() -> Parser<'a, char, Ast<'a>> {
-    (var_name() - tag("-=1")).map(|var_name| Decr { var_name: &var_name })
+fn decr<'a>() -> Parser<'a, char, Ast> {
+    (var_name() - tag("-=1")).map(|var_name| Decr { var_name })
 }
 
-fn args<'a>() -> Parser<'a, char, Vec<&'a str>> {
+fn args<'a>() -> Parser<'a, char, Vec<String>> {
     sym('(') * list(var_name(), sym(',')) - sym(')')
 }
 
-fn assign<'a>() -> Parser<'a, char, Ast<'a>> {
+fn assign<'a>() -> Parser<'a, char, Ast> {
     (var_name() - tag("=") + var_name() + args()).map(|((v, f), arguments)| Assign {
         var_name: v,
         fun_name: f,
@@ -55,7 +48,7 @@ fn assign<'a>() -> Parser<'a, char, Ast<'a>> {
     })
 }
 
-fn while_expr<'a>() -> Parser<'a, char, Ast<'a>> {
+fn while_expr<'a>() -> Parser<'a, char, Ast> {
     let head = tag("while ") * var_name() - tag("!=0:") - whitespace();
     let body = list(call(expression), separator());
     (head + body - tag("#endwhile")).map(|(name, body)| While {
@@ -64,7 +57,7 @@ fn while_expr<'a>() -> Parser<'a, char, Ast<'a>> {
     })
 }
 
-fn def_expr<'a>() -> Parser<'a, char, Ast<'a>> {
+fn def_expr<'a>() -> Parser<'a, char, Ast> {
     let head = tag("def ") * var_name() + args() - tag(":");
     let body = list(call(expression), separator());
     (head + body - tag("#enddef")).map(|((fname, fargs), body)| Def {
@@ -74,7 +67,7 @@ fn def_expr<'a>() -> Parser<'a, char, Ast<'a>> {
     })
 }
 
-fn expression<'a>() -> Parser<'a, char, Ast<'a>> {
+fn expression<'a>() -> Parser<'a, char, Ast> {
     incr() | decr() | return_expr() | assign() | while_expr() | def_expr()
 }
 
@@ -90,6 +83,7 @@ mod tests {
     fn parse_1() {
         let text: Vec<char> = "a+=1".chars().collect();
         let res = expression().parse(&text).unwrap();
-        println!("{:?}", res)
+        let expected = Incr { var_name: String::from("a") };
+        assert_eq!(expected, res);
     }
 }
