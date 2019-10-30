@@ -38,7 +38,7 @@ impl<'a> Display for Env<'a> {
 
 fn interpret<'a>(env: &mut Env<'a>, expr: Ast) {
     println!("{}", env);
-    println!("Executing: {:?}", expr);
+    println!("Executing: {}", expr);
     match expr {
         _ => ()
     }
