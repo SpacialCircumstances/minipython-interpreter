@@ -68,7 +68,8 @@ fn def_expr<'a>() -> Parser<'a, char, Ast> {
 }
 
 fn expression<'a>() -> Parser<'a, char, Ast> {
-    incr() | decr() | return_expr() | assign() | while_expr() | def_expr()
+    let expr = incr() | decr() | return_expr() | assign() | while_expr() | def_expr();
+    whitespace() * expr - whitespace()
 }
 
 fn main() {
