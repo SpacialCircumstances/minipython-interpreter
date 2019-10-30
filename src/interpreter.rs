@@ -4,9 +4,23 @@ use crate::ast::*;
 use crate::ast::Ast::*;
 use std::cmp::{max};
 
+struct Func<'a> {
+    body: &'a Vec<Ast>,
+    parameters: &'a Vec<String>
+}
+
+impl<'a> Func<'a> {
+    pub fn new(body: &'a Vec<Ast>, parameters: &'a Vec<String>) -> Self {
+        Func {
+            body,
+            parameters
+        }
+    }
+}
+
 pub struct Env<'a> {
     context: HashMap<&'a str, i32>,
-    functions: HashMap<&'a str, Ast>
+    functions: HashMap<&'a str, Func<'a>>
 }
 
 impl<'a> Env<'a> {
@@ -31,11 +45,11 @@ impl<'a> Env<'a> {
         self.context.insert(var, value);
     }
 
-    pub fn set_function(&mut self, name: &'a str, expr: Ast) {
-        self.functions.insert(name, expr);
+    pub fn set_function(&mut self, name: &'a str, func: Func<'a>) {
+        self.functions.insert(name, func);
     }
 
-    pub fn get_function(&self, name: &'a str) -> Result<&Ast, String> {
+    pub fn get_function(&self, name: &'a str) -> Result<&Func, String> {
         match self.functions.get(name) {
             None => Err(format!("Function {} does not exist", name)),
             Some(fun) => Ok(fun)
@@ -72,6 +86,10 @@ fn interpret<'a>(env: &mut Env<'a>, expr: &'a Ast) {
                     interpret_program(env, body)
                 }
             }
+        }
+        Def { name, body, parameters } => {
+            let func = Func::new(body, parameters);
+            env.set_function(name, func)
         }
         _ => unimplemented!()
     }
