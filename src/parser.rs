@@ -4,6 +4,10 @@ use crate::ast::*;
 use crate::ast::Ast::*;
 use std::iter::FromIterator;
 
+fn spaces<'a>() -> Parser<'a, char, ()> {
+    (sym(' ') | sym('\t') | sym('\r')).repeat(0..).discard()
+}
+
 fn whitespace<'a>() -> Parser<'a, char, ()> {
     is_a(|c: char| c.is_whitespace()).repeat(0..).discard()
 }
@@ -61,7 +65,7 @@ fn def_expr<'a>() -> Parser<'a, char, Ast> {
 
 fn expression<'a>() -> Parser<'a, char, Ast> {
     let expr = incr() | decr() | return_expr() | assign() | while_expr() | def_expr();
-    whitespace() * expr - whitespace()
+    spaces() * expr - spaces()
 }
 
 pub fn program<'a>() -> Parser<'a, char, Vec<Ast>> {
