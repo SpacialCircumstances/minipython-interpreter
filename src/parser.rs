@@ -47,7 +47,7 @@ fn assign<'a>() -> Parser<'a, char, Ast> {
 fn while_expr<'a>() -> Parser<'a, char, Ast> {
     let head = tag("while ") * var_name() - tag("!=0:") - whitespace();
     let body = list(call(expression), separator());
-    (head + body - tag("#endwhile")).map(|(name, body)| While {
+    (head + body - whitespace() - tag("#endwhile")).map(|(name, body)| While {
         cond_var: name,
         body
     })
@@ -56,7 +56,7 @@ fn while_expr<'a>() -> Parser<'a, char, Ast> {
 fn def_expr<'a>() -> Parser<'a, char, Ast> {
     let head = tag("def ") * var_name() + args() - tag(":");
     let body = list(call(expression), separator());
-    (head + body - tag("#enddef")).map(|((fname, fargs), body)| Def {
+    (head + body - whitespace() - tag("#enddef")).map(|((fname, fargs), body)| Def {
         name: fname,
         parameters: fargs,
         body
