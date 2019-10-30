@@ -81,3 +81,15 @@ fn expression<'a>() -> Parser<'a, char, Ast<'a>> {
 fn main() {
     println!("Hello, world!");
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_1() {
+        let text: Vec<char> = "a+=1".chars().collect();
+        let res = expression().parse(&text).unwrap();
+        println!("{:?}", res)
+    }
+}
