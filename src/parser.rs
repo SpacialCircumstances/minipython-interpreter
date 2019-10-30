@@ -16,6 +16,10 @@ fn separator<'a>() -> Parser<'a, char, ()> {
     (sym(';') | sym('\n')).discard()
 }
 
+fn body<'a>() -> Parser<'a, char, Vec<Ast>> {
+    list(call(expression), separator()) - separator().opt()
+}
+
 fn var_name<'a>() -> Parser<'a, char, String> {
     is_a(|c: char| c.is_alphanumeric()).repeat(0..).collect().map(|s| String::from_iter(s.iter()))
 }
@@ -46,8 +50,7 @@ fn assign<'a>() -> Parser<'a, char, Ast> {
 
 fn while_expr<'a>() -> Parser<'a, char, Ast> {
     let head = tag("while ") * var_name() - tag("!=0:") - whitespace();
-    let body = list(call(expression), separator());
-    (head + body - whitespace() - tag("#endwhile")).map(|(name, body)| While {
+    (head + body() - whitespace() - tag("#endwhile")).map(|(name, body)| While {
         cond_var: name,
         body
     })
@@ -55,8 +58,7 @@ fn while_expr<'a>() -> Parser<'a, char, Ast> {
 
 fn def_expr<'a>() -> Parser<'a, char, Ast> {
     let head = tag("def ") * var_name() + args() - tag(":");
-    let body = list(call(expression), separator());
-    (head + body - whitespace() - tag("#enddef")).map(|((fname, fargs), body)| Def {
+    (head + body() - whitespace() - tag("#enddef")).map(|((fname, fargs), body)| Def {
         name: fname,
         parameters: fargs,
         body
@@ -69,7 +71,7 @@ fn expression<'a>() -> Parser<'a, char, Ast> {
 }
 
 pub fn program<'a>() -> Parser<'a, char, Vec<Ast>> {
-    list(expression(), separator()) - end()
+    body() - end()
 }
 
 #[cfg(test)]
@@ -88,7 +90,7 @@ mod tests {
 
     #[test]
     fn parse_2() {
-        let text: Vec<char> = "while a!=0: a-=1 #endwhile".chars().collect();
+        let text: Vec<char> = "while a!=0: a-=1; #endwhile".chars().collect();
         let res = program().parse(&text).unwrap();
         let expected = vec![
             While {
