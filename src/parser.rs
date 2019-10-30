@@ -4,12 +4,24 @@ use crate::ast::*;
 use crate::ast::Ast::*;
 use std::iter::FromIterator;
 
+fn comment<'a>() -> Parser<'a, char, ()> {
+    let comment_text = not_a(|c| c == '\r' || c == '\n' || c == ';').repeat(0..).convert(|com| {
+        let ct: String = com.into_iter().collect();
+        match &ct[..] {
+            "endwhile" => Err(""),
+            "enddef" => Err(""),
+            _ => Ok(ct)
+        }
+    });
+    (sym('#') - comment_text).discard()
+}
+
 fn spaces<'a>() -> Parser<'a, char, ()> {
-    (sym(' ') | sym('\t') | sym('\r')).repeat(0..).discard()
+    (sym(' ').discard() | sym('\t').discard() | sym('\r').discard() | comment()).repeat(0..).discard()
 }
 
 fn whitespace<'a>() -> Parser<'a, char, ()> {
-    is_a(|c: char| c.is_whitespace()).repeat(0..).discard()
+    (is_a(|c: char| c.is_whitespace()).discard() | comment()).repeat(0..).discard()
 }
 
 fn separator<'a>() -> Parser<'a, char, ()> {
@@ -17,7 +29,7 @@ fn separator<'a>() -> Parser<'a, char, ()> {
 }
 
 fn body<'a>() -> Parser<'a, char, Vec<Ast>> {
-    list(call(expression), separator()) - separator().opt()
+    list(call(expression), separator() - whitespace()) - separator().opt()
 }
 
 fn var_name<'a>() -> Parser<'a, char, String> {
