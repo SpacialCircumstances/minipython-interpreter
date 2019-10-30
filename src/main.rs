@@ -1,16 +1,9 @@
-use pom::parser::*;
-use crate::Ast::*;
-use std::iter::FromIterator;
+mod ast;
 
-#[derive(Debug, Eq, PartialEq)]
-enum Ast {
-    Def { name: String, parameters: Vec<String>, body: Vec<Ast> },
-    Return { name: String },
-    While { cond_var: String, body: Vec<Ast> },
-    Assign { var_name: String, fun_name: String, args: Vec<String> },
-    Incr { var_name: String },
-    Decr { var_name: String }
-}
+use pom::parser::*;
+use ast::*;
+use ast::Ast::*;
+use std::iter::FromIterator;
 
 fn whitespace<'a>() -> Parser<'a, char, ()> {
     is_a(|c: char| c.is_whitespace()).repeat(0..).discard()
