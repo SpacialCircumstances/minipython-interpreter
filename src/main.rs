@@ -86,4 +86,21 @@ mod tests {
         let expected = Incr { var_name: String::from("a") };
         assert_eq!(expected, res);
     }
+
+    #[test]
+    fn parse_2() {
+        let text: Vec<char> = "while a!=0: a-=1 #endwhile".chars().collect();
+        let res = expression().parse(&text).unwrap();
+        let expected = While {
+            cond_var: String::from("a"),
+            body: vec![
+                Decr {
+                    var_name: String::from("a")
+                }
+            ]
+        };
+        assert_eq!(expected, res);
+    }
+
+    
 }
