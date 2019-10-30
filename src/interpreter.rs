@@ -49,17 +49,23 @@ impl<'a> Display for Env<'a> {
     }
 }
 
-fn interpret<'a>(env: &mut Env<'a>, expr: &Ast) {
-    println!("{}", env);
+fn interpret<'a>(env: &mut Env<'a>, expr: &'a Ast) {
     println!("Executing: {}", expr);
+    println!("{}", env);
+    println!("===>");
     match expr {
-        _ => ()
+        Incr { var_name } => {
+            let old = env.get_or_create(var_name, 0);
+            env.set(var_name, old)
+        }
+        _ => unimplemented!()
     }
     println!("{}", env);
+    println!();
 }
 
-pub fn interpret_program<'a>(mut env: Env<'a>, program: Vec<Ast>) {
+pub fn interpret_program<'a>(mut env: Env<'a>, program: &'a Vec<Ast>) {
     for expr in program {
-        interpret(&mut env, &expr)
+        interpret(&mut env, expr)
     }
 }
