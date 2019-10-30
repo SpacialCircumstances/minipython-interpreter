@@ -103,5 +103,46 @@ mod tests {
         assert_eq!(expected, res);
     }
 
-    
+    #[test]
+    fn parse_3() {
+        let text: Vec<char> = "x1+=1; def add(x, y): while x!=0: n+=1; x-=1 #endwhile; while y!=0: n+=1; y-=1 #endwhile; return n #enddef; a=add(x1, y1); a+=1".chars().collect();
+        let res = program().parse(&text).unwrap();
+        let expected = vec![
+            Incr { var_name: String::from("x1") },
+            Def {
+                name: String::from("add"),
+                parameters: vec![
+                    String::from("x"),
+                    String::from("y")
+                ],
+                body: vec![
+                    While {
+                        cond_var: String::from("x"),
+                        body: vec![
+                            Incr { var_name: String::from("n") },
+                            Decr { var_name: String::from("x") }
+                        ]
+                    },
+                    While {
+                        cond_var: String::from("y"),
+                        body: vec![
+                            Incr { var_name: String::from("n") },
+                            Decr { var_name: String::from("y") }
+                        ]
+                    },
+                    Return { name: String::from("n") }
+                ]
+            },
+            Assign {
+                var_name: String::from("a"),
+                fun_name: String::from("add"),
+                args: vec![
+                    String::from("x1"),
+                    String::from("y1")
+                ]
+            },
+            Incr { var_name: String::from("a") }
+        ];
+        assert_eq!(expected, res);
+    }
 }
