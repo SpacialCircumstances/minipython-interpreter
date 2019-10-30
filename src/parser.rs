@@ -65,7 +65,7 @@ fn expression<'a>() -> Parser<'a, char, Ast> {
 }
 
 pub fn program<'a>() -> Parser<'a, char, Vec<Ast>> {
-    list(expression(), separator())
+    list(expression(), separator()) - end()
 }
 
 #[cfg(test)]
