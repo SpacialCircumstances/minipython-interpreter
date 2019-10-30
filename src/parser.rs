@@ -69,7 +69,7 @@ fn while_expr<'a>() -> Parser<'a, char, Ast> {
 }
 
 fn def_expr<'a>() -> Parser<'a, char, Ast> {
-    let head = tag("def ") * var_name() + args() - tag(":");
+    let head = tag("def ") * var_name() + args() - tag(":") - whitespace();
     (head + body() - whitespace() - tag("#enddef")).map(|((fname, fargs), body)| Def {
         name: fname,
         parameters: fargs,
