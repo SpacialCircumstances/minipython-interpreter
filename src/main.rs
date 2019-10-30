@@ -20,33 +20,6 @@ struct Program<'a> {
     body: Vec<Ast<'a>>
 }
 
-#[derive(Debug, Eq, PartialEq)]
-enum Token<'a> {
-    Def,
-    Return,
-    Equal,
-    EqualPlus,
-    EqualMinus,
-    One,
-    Identifier(&'a str),
-    LeftParen,
-    RightParen
-}
-
-#[derive(Debug, Eq, PartialEq)]
-struct Tokenizer<'a> {
-    code: Peekable<char>,
-    current: usize
-}
-
-impl<'a> Iterator for Tokenizer<'a> {
-    type Item = Token<'a>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        None
-    }
-}
-
 fn separator<'a>() -> Parser<'a, char, ()> {
     (sym(';') | sym('\n')).discard()
 }
