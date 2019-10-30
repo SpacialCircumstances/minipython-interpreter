@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fmt::{Display, Formatter, Error};
 use crate::ast::*;
 use crate::ast::Ast::*;
+use std::cmp::min;
 
 pub struct Env<'a> {
     context: HashMap<&'a str, i32>,
@@ -56,7 +57,12 @@ fn interpret<'a>(env: &mut Env<'a>, expr: &'a Ast) {
     match expr {
         Incr { var_name } => {
             let old = env.get_or_create(var_name, 0);
-            env.set(var_name, old)
+            env.set(var_name, old + 1)
+        }
+        Decr { var_name } => {
+            let old = env.get_or_create(var_name, 0);
+            let new = min(0, old - 1);
+            env.set(var_name, new)
         }
         _ => unimplemented!()
     }
