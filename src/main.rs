@@ -37,7 +37,7 @@ fn decr<'a>() -> Parser<'a, char, Ast> {
 }
 
 fn args<'a>() -> Parser<'a, char, Vec<String>> {
-    sym('(') * list(var_name(), sym(',')) - sym(')')
+    sym('(') * list(whitespace() * var_name(), sym(',')) - sym(')')
 }
 
 fn assign<'a>() -> Parser<'a, char, Ast> {
@@ -70,6 +70,10 @@ fn def_expr<'a>() -> Parser<'a, char, Ast> {
 fn expression<'a>() -> Parser<'a, char, Ast> {
     let expr = incr() | decr() | return_expr() | assign() | while_expr() | def_expr();
     whitespace() * expr - whitespace()
+}
+
+fn program<'a>() -> Parser<'a, char, Vec<Ast>> {
+    list(expression(), separator())
 }
 
 fn main() {
