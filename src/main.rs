@@ -16,7 +16,8 @@ fn main() {
     let program_parser = parser::program();
     match program_parser.parse(&code) {
         Ok(ast) => {
-            let env = std::collections::HashMap::new();
+            let env_initial = std::collections::HashMap::new();
+            let env = interpreter::Env::new(&env_initial);
             interpreter::interpret_program(env, ast);
         },
         Err(e) => println!("{}", e)
