@@ -1,5 +1,6 @@
 mod ast;
 mod parser;
+mod interpreter;
 
 use std::env;
 use std::fs;
@@ -14,7 +15,10 @@ fn main() {
     let code: Vec<char> = String::from_utf8(code_bytes).unwrap().chars().collect();
     let program_parser = parser::program();
     match program_parser.parse(&code) {
-        Ok(ast) => println!("{:?}", ast),
+        Ok(ast) => {
+            let env = std::collections::HashMap::new();
+            interpreter::interpret_program(env, ast);
+        },
         Err(e) => println!("{}", e)
     }
 }
