@@ -3,8 +3,10 @@ use std::fmt::{Display, Formatter, Error};
 use crate::ast::*;
 use crate::ast::Ast::*;
 use std::cmp::{max};
+use std::iter::FromIterator;
 
-struct Func<'a> {
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct Func<'a> {
     body: &'a Vec<Ast>,
     parameters: &'a Vec<String>
 }
@@ -20,14 +22,24 @@ impl<'a> Func<'a> {
 
 pub struct Env<'a> {
     context: HashMap<&'a str, i32>,
-    functions: HashMap<&'a str, Func<'a>>
+    functions: HashMap<&'a str, Func<'a>>,
+    result_name: Option<&'a str>
 }
 
 impl<'a> Env<'a> {
     pub fn new(initial: &HashMap<&'a str, i32>) -> Self {
         Env {
             context: initial.clone(),
-            functions: HashMap::new()
+            functions: HashMap::new(),
+            result_name: None
+        }
+    }
+
+    pub fn from_parent(context: HashMap<&'a str, i32>, functions: HashMap<&'a str, Func<'a>>) -> Self {
+        Env {
+            context,
+            functions,
+            result_name: None
         }
     }
 
@@ -39,6 +51,18 @@ impl<'a> Env<'a> {
             },
             Some(val) => *val
         }
+    }
+
+    pub fn get_result(&mut self) -> Option<i32> {
+        self.result_name.map(|n| self.get_or_create(n))
+    }
+
+    pub fn try_get(&self, var: &'a str) -> Option<&i32> {
+        self.context.get(var)
+    }
+
+    pub fn set_result(&mut self, name: &'a str) {
+        self.result_name = Some(name)
     }
 
     pub fn set(&mut self, var: &'a str, value: i32) {
@@ -91,7 +115,32 @@ fn interpret<'a>(env: &mut Env<'a>, expr: &'a Ast) {
             let func = Func::new(body, parameters);
             env.set_function(name, func)
         }
-        _ => unimplemented!()
+        Assign { var_name, fun_name, args } => {
+            let func = env.get_function(fun_name).unwrap();
+            let mut new_context = HashMap::new();
+            if args.len() != func.parameters.len() {
+                panic!(format!("Function {} expected {} arguments, but got {}", fun_name, func.parameters.len(), args.len()));
+            }
+
+            for (index, param) in func.parameters.iter().enumerate() {
+                let arg = &args[index];
+                let value = match env.try_get(arg) {
+                    Some(i) => *i,
+                    None => 0
+                };
+                new_context.insert(param.as_ref(), value);
+            }
+
+            let mut new_env = Env::from_parent(new_context, env.functions.clone());
+            interpret_program(&mut new_env, func.body);
+            match new_env.get_result() {
+                None => panic!(format!("Function {} returned no result", fun_name)),
+                Some(i) => env.set(var_name, i)
+            }
+        }
+        Return { name } => {
+            env.set_result(name)
+        }
     }
     println!("{}", env);
     println!();
