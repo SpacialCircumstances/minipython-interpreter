@@ -88,10 +88,12 @@ impl<'a> Display for Env<'a> {
     }
 }
 
-fn interpret<'a>(env: &mut Env<'a>, expr: &'a Ast) {
-    println!("Executing: {}", expr);
-    println!("{}", env);
-    println!("===>");
+fn interpret<'a>(env: &mut Env<'a>, expr: &'a Ast, trace: bool) {
+    if trace {
+        println!("Executing: {}", expr);
+        println!("{}", env);
+        println!("===>");
+    }
     match expr {
         Incr { var_name } => {
             let old = env.get_or_create(var_name);
@@ -107,7 +109,7 @@ fn interpret<'a>(env: &mut Env<'a>, expr: &'a Ast) {
                 if env.get_or_create(cond_var) == 0 {
                     break;
                 } else {
-                    interpret_program(env, body)
+                    interpret_program(env, body, trace)
                 }
             }
         }
@@ -132,7 +134,7 @@ fn interpret<'a>(env: &mut Env<'a>, expr: &'a Ast) {
             }
 
             let mut new_env = Env::from_parent(new_context, env.functions.clone());
-            interpret_program(&mut new_env, func.body);
+            interpret_program(&mut new_env, func.body, trace);
             match new_env.get_result() {
                 None => panic!(format!("Function {} returned no result", fun_name)),
                 Some(i) => env.set(var_name, i)
@@ -142,12 +144,14 @@ fn interpret<'a>(env: &mut Env<'a>, expr: &'a Ast) {
             env.set_result(name)
         }
     }
-    println!("{}", env);
-    println!();
+    if trace {
+        println!("{}", env);
+        println!();
+    }
 }
 
-pub fn interpret_program<'a>(env: &mut Env<'a>, program: &'a Vec<Ast>) {
+pub fn interpret_program<'a>(env: &mut Env<'a>, program: &'a Vec<Ast>, trace: bool) {
     for expr in program {
-        interpret(env, expr)
+        interpret(env, expr, trace)
     }
 }

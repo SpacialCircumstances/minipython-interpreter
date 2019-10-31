@@ -21,10 +21,16 @@ fn main() {
             .help("The script file to run")
             .required(true)
             .index(1)
+        )
+        .arg(Arg::with_name("trace")
+            .help("Trace execution (displays context before and after each statement")
+            .short("t")
+            .long("trace")
         ).get_matches();
     if let Some(filename) = matches.value_of("file") {
         let code_bytes = fs::read(filename).expect("Failed to read file");
         let code: Vec<char> = String::from_utf8(code_bytes).expect("Failed to decode file").chars().collect();
+        let trace = matches.is_present("trace");
         if matches.is_present("interactive") {
             let program_parser = parser::interactive_program();
             match program_parser.parse(&code) {
@@ -39,7 +45,7 @@ fn main() {
                     }
                     let mut env = interpreter::Env::new(&env_initial);
                     env.set_result(&iprog.output);
-                    interpreter::interpret_program(&mut env, &iprog.program);
+                    interpreter::interpret_program(&mut env, &iprog.program, trace);
                     println!("Result: {}={}", &iprog.output, env.get_result().unwrap());
                 },
                 Err(e) => panic!(format!("Parser error: {}. Make sure the script you are using is interactive!", e))
@@ -50,7 +56,7 @@ fn main() {
                 Ok(ast) => {
                     let env_initial = IndexMap::new();
                     let mut env = interpreter::Env::new(&env_initial);
-                    interpreter::interpret_program(&mut env, &ast);
+                    interpreter::interpret_program(&mut env, &ast, trace);
                 },
                 Err(e) => panic!(format!("Parser error: {}. Make sure the script you are using is non-interactive!", e))
             }
