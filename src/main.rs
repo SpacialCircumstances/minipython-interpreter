@@ -42,7 +42,7 @@ fn main() {
                     interpreter::interpret_program(&mut env, &iprog.program);
                     println!("Result: {}={}", &iprog.output, env.get_result().unwrap());
                 },
-                Err(e) => println!("{}", e)
+                Err(e) => panic!(format!("Parser error: {}", e))
             }
         } else {
             let program_parser = parser::program();
@@ -52,7 +52,7 @@ fn main() {
                     let mut env = interpreter::Env::new(&env_initial);
                     interpreter::interpret_program(&mut env, &ast);
                 },
-                Err(e) => println!("{}", e)
+                Err(e) => panic!(format!("Parser error: {}", e))
             }
         }
     }
