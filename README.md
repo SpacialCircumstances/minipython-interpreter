@@ -1,6 +1,6 @@
 # minipython-interpreter
 
-A simple interpreter for minipython, a minimal, turing complete, sort-of subset of Python.
+A simple interpreter for (a) minipython, a minimal, turing complete, python-like language. As minipython is not actually a subset of Python (f.e. incrementing variables without creating them, the range of an int), it cannot be reliably interpreted by a python interpreter. This interpreter is capable of running minipython programs, with the restriction that identation-based syntax is not fully supported, which means that while-blocks have to end with an `#endwhile` comment and function definitions with an `#enddef`.
 
 ## CLI
 
