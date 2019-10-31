@@ -11,6 +11,13 @@ pub enum Ast {
     Decr { var_name: String }
 }
 
+#[derive(Debug, Eq, PartialEq)]
+pub struct InteractiveProgram {
+    pub program: Vec<Ast>,
+    pub inputs: Vec<String>,
+    pub output: String
+}
+
 impl Display for Ast {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         match self {
