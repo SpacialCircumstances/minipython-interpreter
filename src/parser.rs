@@ -85,6 +85,17 @@ pub fn program<'a>() -> Parser<'a, char, Vec<Ast>> {
     body() - end()
 }
 
+pub fn interactive_program<'a>() -> Parser<'a, char, InteractiveProgram> {
+    let inputs = tag("input:") * list(spaces() * var_name(), sym(','));
+    let output = tag("output:") * spaces() * var_name();
+    let header = whitespace() * inputs - whitespace() + output - whitespace();
+    (header + program()).map(|((inp, outp), program)| InteractiveProgram {
+        program,
+        inputs: inp,
+        output: outp
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -156,6 +167,32 @@ mod tests {
             },
             Incr { var_name: String::from("a") }
         ];
+        assert_eq!(expected, res);
+    }
+
+    #[test]
+    fn parse_4() {
+        let code: Vec<char> =
+        "#test
+        input: a, b, c
+        #asdf
+        output: x
+        #test test
+        x+=1".chars().collect();
+        let res = interactive_program().parse(&code).unwrap();
+        let expected = InteractiveProgram {
+            inputs: vec![
+                String::from("a"),
+                String::from("b"),
+                String::from("c")
+            ],
+            output: String::from("x"),
+            program: vec![
+                Incr {
+                    var_name: String::from("x")
+                }
+            ]
+        };
         assert_eq!(expected, res);
     }
 }
