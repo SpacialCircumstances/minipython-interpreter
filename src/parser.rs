@@ -82,7 +82,7 @@ fn expression<'a>() -> Parser<'a, char, Ast> {
 }
 
 pub fn program<'a>() -> Parser<'a, char, Vec<Ast>> {
-    body() - end()
+    body() - whitespace() - end()
 }
 
 pub fn interactive_program<'a>() -> Parser<'a, char, InteractiveProgram> {
