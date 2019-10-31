@@ -23,8 +23,8 @@ fn main() {
             .index(1)
         ).get_matches();
     if let Some(filename) = matches.value_of("file") {
-        let code_bytes = fs::read(filename).unwrap();
-        let code: Vec<char> = String::from_utf8(code_bytes).unwrap().chars().collect();
+        let code_bytes = fs::read(filename).expect("Failed to read file");
+        let code: Vec<char> = String::from_utf8(code_bytes).expect("Failed to decode file").chars().collect();
         if matches.is_present("interactive") {
             let program_parser = parser::interactive_program();
             match program_parser.parse(&code) {
