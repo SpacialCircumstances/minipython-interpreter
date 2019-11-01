@@ -41,6 +41,9 @@ fn main() {
                         let mut str_value = String::new();
                         stdin().read_line(&mut str_value).expect("Failed to read line");
                         let value: i32 = str_value.trim().parse().expect("Failed to read number");
+                        if value < 0 {
+                            panic!(format!("Value given for {} must be > 0, but was {}.", input, value));
+                        }
                         env_initial.insert(input, value);
                     }
                     let mut env = interpreter::Env::new(&env_initial);
